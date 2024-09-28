@@ -2,7 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import mapRoute from './routes/map.js';
-import assetRoute from './routes/assets.js';
+
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -17,11 +17,10 @@ app.use(express.urlencoded({extended:true}));
 
 
 app.get("/",(request,response)=>{
-
 response.send("HELLO WORLD");
 });
 
-app.use("/assets",assetRoute(__dirname));
+app.use("/assets",express.static(__dirname + '/public'));
 app.use("/map", mapRoute);
 const PORT =  process.env.PORT;
 app.listen(PORT, ()=> {
