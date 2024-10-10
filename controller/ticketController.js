@@ -89,7 +89,7 @@ const getTrips = async (req,res,next)=>{
     
                 if(filter === 'reserved trip' || filter === 'reserved_trip'){
                     //TripDate > Now
-                    if(trip_date.getTime() >= now.getTime() && trip_date.getDate() >= now.getDate()){
+                    if(trip_date.getTime() >= now.getTime()){
                         data.push(ticket);
                     }
                 }
