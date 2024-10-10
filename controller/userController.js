@@ -77,6 +77,7 @@ const changePassword = async(req,res,next)=>{
         }
         const data = await firebase.updateData(COLLECTION_NAME,newData,doc_id);
         if(!data) return res.status(400).json({message : 'Unable to update password'});
+        res.status(200).json({message : 'Password updated'});
     }catch(error){
         next(error);
     }
