@@ -1,4 +1,5 @@
 import firebase from './firebase.js';
+import moment from 'moment';
 
 const COLLECTION = 'tickets';
 const ticketFields = [
@@ -60,8 +61,9 @@ const getTrips = async (req,res,next)=>{
             //res.json(tickets);
             let data=[];
             for(const ticket of tickets){
-                const trip_date = ticket.route.trip_date.toDate();
-                const now = new Date();
+                let trip_date = ticket.route.trip_date.toDate();
+                const utcOffset = moment().utcOffset(8);
+                const now = utcOffset.toDate();
                 if(filter === 'current bus'){
                     
                     if(trip_date.getHours() == now.getHours()&& trip_date.getMinutes() <= now.getMinutes() && now.getDate()===trip_date.getDate()){
