@@ -137,7 +137,8 @@ const bookTrip = async (req,res,next)=>{
     try{
         
         const seat_occupation = req.body.seat_occupation;
-        const passenger_id = req.body.passenger_id;
+        let passenger_id = req.body.passenger_id;
+        const user_id = req.body.user_id;
         const route_id = req.body.route_id;
         
         const data = await firebase.getDocumentById(COLLECTION,route_id,['available_seats']);
@@ -146,8 +147,12 @@ const bookTrip = async (req,res,next)=>{
         //Validate available seats;
         if(seats > busSeats) throw Error('Number of seats exceeds available seats');
 
-        //Validate seat occupation
-        //TODO : VALIDATE SEAT OCCUPATION
+        if(user_id != null && passenger_id == null){
+            const data = await firebase.createDocumentReference('users',user_id);
+            const query = setQuery('user_id','==',data);
+            const passengerRef = await firebase.getDocumentByParam('passenger',query,['id']);
+            passenger_id = passengerRef[0].id;
+        }
        let refDoc = [];
 
        refDoc.push({
