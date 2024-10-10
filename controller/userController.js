@@ -70,7 +70,7 @@ const changePassword = async(req,res,next)=>{
         const newPassword = req.body.newPassword;
         const confirmPassword = req.body.confirmPassword;
         if(newPassword !== confirmPassword) return res.status(400).json({message : 'New password and confirm password must match!'});
-        const doc_id = req.locals.authenticated.id;
+        const doc_id = res.locals.authenticated.id;
 
         const newData = {
             password : newPassword
