@@ -80,14 +80,14 @@ const getTrips = async (req,res,next)=>{
                     }
                 }
     
-                if(filter === 'past bus trip'){
+                if(filter === 'past bus trip' || filter === 'past_bus_trip' ){
                     //TripDate < Now
                     if(trip_date.getTime() < now.getTime() && trip_date.getDate() < now.getDate()){
                         data.push(ticket);
                     }
                 }
     
-                if(filter === 'reserved trip'){
+                if(filter === 'reserved trip' || filter === 'reserved_trip'){
                     //TripDate > Now
                     if(trip_date.getTime() >= now.getTime() && trip_date.getDate() >= now.getDate()){
                         data.push(ticket);
