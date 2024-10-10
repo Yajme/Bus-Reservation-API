@@ -11,7 +11,7 @@ router.post('/driver',controller.authenticateUser,controller.userValidation);
 router.post('/passenger/register',controller.register);
 router.post('/driver/register',controller.registerDriver);
 // /changepassword
-router.post('/passenger/changepassword',controller.authenticateUser,controller.userValidation,controller.changePassword);
-router.post('/admin/changepassword',controller.authenticateUser,controller.userValidation,controller.changePassword);
-router.post('/driver/changepassword',controller.authenticateUser,controller.userValidation,controller.changePassword);
+router.post('/passenger/changepassword',controller.authenticateUser,controller.changePassword);
+router.post('/admin/changepassword',controller.authenticateUser,controller.changePassword);
+router.post('/driver/changepassword',controller.authenticateUser,controller.changePassword);
 export default router;
