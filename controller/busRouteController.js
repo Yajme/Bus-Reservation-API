@@ -142,7 +142,7 @@ const bookTrip = async (req,res,next)=>{
         
         const data = await firebase.getDocumentById(COLLECTION,route_id,['available_seats']);
         const busSeats = Number(data.available_seats);
-        const seats = Number(seat_occupation.length);
+        const seats = Number(seat_occupation);
         //Validate available seats;
         if(seats > busSeats) throw Error('Number of seats exceeds available seats');
 
@@ -175,10 +175,7 @@ const bookTrip = async (req,res,next)=>{
         key: 'ticket'
      }
      
-     for(const seat of seat_occupation){
-        await firebase.setDocument('seat_occupation',{seat_number : seat},[ticket_ref])
-     }
-
+     
      //Updating available seats
     
      const newAvailableSeats = busSeats - seats;
