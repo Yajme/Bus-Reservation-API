@@ -4,10 +4,31 @@ import firebase from './firebase.js';
 const COLLECTION_NAME='users';
 const selectUser = async(req,res,next)=>{
     try{
+        const id = req.query.id;
+        const role = req.query.role;
+        if(!id || id === null) return res.status(401).json({message : 'Invalid query'});
+
+        const data = await firebase.createDocumentReference(COLLECTION_NAME,id);
+
+        const constraints = {
+            key : 'user_id',
+            Logic : '==',
+            Param : data
+        };
+
+        const selectedFields = [
+            'first_name',
+            'last_name'
+        ]
+        const userRef = await firebase.getDocumentByParam(role,constraints,selectedFields);
+
+        if(!userRef || userRef.length < 1) return res.status(404).json({message : 'User not found, did you put the correct id?'});
+        const userDoc = userRef[0];
 
         
+        res.status(200).json(userDoc);
     }catch(error){
-
+        console.log(error);
     }
 }
 const authenticateUser = async (req,res,next)=>{
@@ -59,12 +80,83 @@ const userValidation = (req,res,next) =>{
 
 const register = async(req,res,next)=>{
     try{
+        const first_name = req.body.first_name;
+        const last_name = req.body.last_name;
+        const username = req.body.username;
+        const password = req.body.password;
 
+        //validate if username exist within the firestore;
+        const usernameConstraint  = { 
+            key : 'username',
+            Logic : '==',
+            Param : username
+        };
+        const checkUsername = await firebase.getDocumentByParam(COLLECTION_NAME,usernameConstraint,['id']);
+        if(checkUsername.length > 0) return res.status(409).json({message : 'Username already exist'});
+        const setDataUser = {
+            username : username,
+            password : password
+        }
+
+        const data = await firebase.setDocument(COLLECTION_NAME,setDataUser);
+        if(!data || data === '') return res.status(400).json({message : 'User did not register, please try again.'});
+
+       
+        const userRef = await firebase.createDocumentReference(COLLECTION_NAME,data);
+
+        const setDataPassenger = {
+            first_name :first_name,
+            last_name : last_name,
+            user_id : userRef
+        }
+
+        await firebase.setDocument('passenger',setDataPassenger);
+
+        res.status(200).json({message : 'User registered!'})
     }catch(error){
-    
+        next(error);
     }
 }
 
+const registerDriver = async(req,res,next)=>{
+    try{
+        const first_name = req.body.first_name;
+        const last_name = req.body.last_name;
+        const username = req.body.username;
+        const password = req.body.password;
+
+        //validate if username exist within the firestore;
+        const usernameConstraint  = { 
+            key : 'username',
+            Logic : '==',
+            Param : username
+        };
+        const checkUsername = await firebase.getDocumentByParam(COLLECTION_NAME,usernameConstraint,['id']);
+        if(checkUsername.length > 0) return res.status(409).json({message : 'Username already exist'});
+        const setDataUser = {
+            username : username,
+            password : password
+        }
+
+        const data = await firebase.setDocument(COLLECTION_NAME,setDataUser);
+        if(!data || data === '') return res.status(400).json({message : 'User did not register, please try again.'});
+
+       
+        const userRef = await firebase.createDocumentReference(COLLECTION_NAME,data);
+
+        const setDataDriver= {
+            first_name :first_name,
+            last_name : last_name,
+            user_id : userRef
+        }
+
+        await firebase.setDocument('driver',setDataDriver);
+
+        res.status(200).json({message : 'User registered!'})
+    }catch(error){
+        next(error);
+    }
+}
 const changePassword = async(req,res,next)=>{
     try{
         const newPassword = req.body.newPassword;
@@ -85,6 +177,8 @@ const changePassword = async(req,res,next)=>{
 export default {
 authenticateUser,
 register,
+registerDriver,
 userValidation,
-changePassword
+changePassword,
+selectUser
 };
