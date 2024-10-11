@@ -136,7 +136,7 @@ const getTrips = async (req,res,next)=>{
                 
                 if(filter === 'past trip'){
                     if(trip_date.getTime() < now.getTime()){
-                        data.push(ticket);
+                        data.push(route);
                     }
                 }
             }
