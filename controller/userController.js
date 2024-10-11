@@ -95,7 +95,8 @@ const register = async(req,res,next)=>{
         if(checkUsername.length > 0) return res.status(409).json({message : 'Username already exist'});
         const setDataUser = {
             username : username,
-            password : password
+            password : password,
+            role : 'passenger'
         }
 
         const data = await firebase.setDocument(COLLECTION_NAME,setDataUser);
@@ -135,7 +136,8 @@ const registerDriver = async(req,res,next)=>{
         if(checkUsername.length > 0) return res.status(409).json({message : 'Username already exist'});
         const setDataUser = {
             username : username,
-            password : password
+            password : password,
+            role : 'driver'
         }
 
         const data = await firebase.setDocument(COLLECTION_NAME,setDataUser);

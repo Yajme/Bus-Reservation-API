@@ -201,19 +201,23 @@ const bookTrip = async (req,res,next)=>{
 
 const setRoute = async (req,res,next)=>{
     try{
-        const bus_id = req.body.bus_id;
+        const driver_id = req.body.id;
+
+        const driverRef = await firebase.createDocumentReference('driver',driver_id);
+        const busQuery = setQuery('driver_id','==',driverRef);
+        const busDoc = await firebase.getDocumentByParam('buses',busQuery,['id','total_seats']);
+
+        const bus_id = busDoc[0].id;
         //Get the bus here first
         //Then get the bus capacity
 
-        const bus_snapData = await firebase.createDocumentReference('buses',bus_id);
-        const bus = bus_snapData.data();
 
         const destination = req.body.destination;
         const destination_coordinates = firebase.toGeopoint(req.body.destination_coordinates.latitude,req.body.destination_coordinates.longitude);
         const origin = req.body.origin;
         const origin_coordinates = firebase.toGeopoint(req.body.origin_coordinates.latitude,req.body.origin_coordinates.longitude);
         const trip_date = new Date(Date.parse(req.body.trip_date));
-        const available_seats = bus.total_seats;
+        const available_seats =busDoc[0].total_seats;
 
        
 
