@@ -111,6 +111,8 @@ const getTrips = async (req,res,next)=>{
             //Driver
 
             const getDriver = await firebase.getDocumentByParam('driver',query,['id']);
+
+
             const driver_id = getDriver[0].id;
             const driverRef = await firebase.createDocumentReference('driver',driver_id);
             const queryBus = setQuery('driver_id','==',driverRef);
@@ -119,14 +121,23 @@ const getTrips = async (req,res,next)=>{
             const busRef = await firebase.createDocumentReference('buses',bus_id);
             const queryRoute = setQuery('bus','==',busRef);
             const getRoute = await firebase.getDocumentByParam('routes',queryRoute,['trip_date','origin','destination']);
-            const now = new Date();
+
 
             let data= [];
             for(const route of getRoute){
                 const trip_date = route.trip_date.toDate();
+                const utcOffset = moment().utcOffset(8);
+                const now = utcOffset.toDate();
+                if(filter === 'scheduled trip'){
+                    if(trip_date.getDate() >= now.getDate() && trip_date.getTime() >= now.getTime()){
+                        data.push(route);
+                    }
+                }
                 
-                if(trip_date.getDate() >= now.getDate() && trip_date.getTime() >= now.getTime()){
-                    data.push(route);
+                if(filter === 'past trip'){
+                    if(trip_date.getTime() < now.getTime()){
+                        data.push(ticket);
+                    }
                 }
             }
             res.status(200).json(data);
