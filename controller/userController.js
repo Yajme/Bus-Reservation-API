@@ -2,6 +2,59 @@ import firebase from './firebase.js';
 
 
 const COLLECTION_NAME='users';
+const userCount = async(req,res,next)=>{
+    try{
+        const id = req.query.id;
+        if(!id) return res.status(401).json({message : 'Invalid id'});
+        const admin = await firebase.getDocumentById(COLLECTION_NAME,id,['role','id']);
+        if(admin.role !== 'admin') return res.status(401).json({message : 'Invalid id'});
+
+        const users = await firebase.getDocuments(COLLECTION_NAME,['role']);
+        let passengerCount = 0;
+        let driverCount = 0;
+
+
+        console.log(users);
+        for(const user of users){
+            if(user.role === 'passenger'){
+                passengerCount++;
+            }
+
+            if(user.role === 'driver'){
+                driverCount++;
+            }
+        }
+
+        const data = {
+            passenger_count : passengerCount,
+            driver_count : driverCount
+        }
+
+        res.status(200).json(data);
+    }catch(error){
+        console.log(error);
+    }
+}
+const listUser = async(req,res,next)=>{
+    try{
+        const role = req.query.role;
+        //admin id is a must
+        const id = req.query.id;
+
+        //Check first if id is an admin
+        const admin = await firebase.getDocumentById(COLLECTION_NAME,id,['role','id']);
+        if(admin.role !== 'admin') return res.status(401).json({message : 'Invalid id'});
+
+        if(role === 'admin' || !role) return res.status(401).json({message : 'Invalid role'});
+        const getUsers = await firebase.getDocuments(role,['id','first_name','last_name']);
+
+        if(getUsers.length < 1) return res.status(404).json({message : "no data found"});
+
+        return res.status(200).json(getUsers);
+    }catch(error){
+        console.log(error);
+    }
+}
 const selectUser = async(req,res,next)=>{
     try{
         const id = req.query.id;
@@ -183,5 +236,7 @@ register,
 registerDriver,
 userValidation,
 changePassword,
-selectUser
+selectUser,
+listUser,
+userCount
 };

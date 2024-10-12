@@ -128,6 +128,44 @@ const searchRoutes = async(req,res,next)=>{
     }
 };
 
+const listDriverWithPassenger = async (req,res,next)=>{
+    try{
+        const selectedFields = [
+            'trip_date',
+            'bus',
+            'bus_line',
+            'total_seats',
+            'available_seats',
+            'driver_id',
+            'first_name',
+            'last_name',
+
+
+
+        ]
+
+        const data = await firebase.getDocuments(COLLECTION,selectedFields);
+
+        console.log(data);
+        let responses = [];
+        for(const trip of data){
+            const doc = {
+                id :trip.id,
+                trip_date : trip.trip_date,
+                bus_line : trip.bus.bus_line,
+                driver_name : `${trip.bus.driver_id.first_name} ${trip.bus.driver_id.last_name}`,
+                passenger_count : Number(trip.bus.total_seats)-Number(trip.available_seats)
+            }
+            responses.push(doc);
+        }
+
+        if(responses.length < 1) return res.status(404).json({message : 'No Data Found'});
+
+        res.status(200).json(responses);
+    }catch(error){
+        console.log(error);
+    }
+}
 //--------------------------------
 //-------POST REQUEST-------------
 //--------------------------------
@@ -248,5 +286,6 @@ export default {
 getAvailableRoute,
 bookTrip,
 searchRoutes,
-setRoute
+setRoute,
+listDriverWithPassenger
 };

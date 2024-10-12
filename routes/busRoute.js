@@ -3,6 +3,7 @@ import busRouteController from '../controller/busRouteController.js';
 const router = express.Router();
 
 
+router.get('/list',busRouteController.listDriverWithPassenger);
 router.get("/available",busRouteController.getAvailableRoute);
 router.get('/search',busRouteController.searchRoutes);
 router.post("/book",busRouteController.bookTrip);

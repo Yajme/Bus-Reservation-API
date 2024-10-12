@@ -2,6 +2,8 @@ import express from 'express';
 import controller from '../controller/userController.js'
 const router = express.Router();
 
+router.get('/count',controller.userCount);
+router.get('/select',controller.listUser);
 router.get('/passenger',controller.selectUser);
 router.get('/driver', controller.selectUser);
 router.post('/passenger',controller.authenticateUser,controller.userValidation);

@@ -6,6 +6,7 @@ import mapRoute from './routes/map.js';
 import ticketRoute from './routes/ticket.js';
 import busRoute from './routes/busRoute.js';
 import userRoute from './routes/users.js';
+import bus from './routes/bus.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -31,6 +32,7 @@ app.use("/map", mapRoute);
 app.use("/ticket",ticketRoute);
 app.use("/routes",busRoute);
 app.use("/users",userRoute);
+app.use('/bus',bus);
 
 //catches non existent url
 app.get('*', (req, res, next) => {
