@@ -24,7 +24,29 @@ const listBus = async (req,res,next)=>{
         next(error);
     }
 }
+const busWithoutDrivers = async (req,res,next)=>{
+    try{
+        const drivers = await firebase.getDocuments('driver',['id','first_name','last_name']);
+        let data = []
+        for(const driver of drivers){
+            const driverRef = await firebase.createDocumentReference('driver',driver.id);
+            const query = {
+                key : 'driver_id',
+                Logic : '==',
+                Param : driverRef
+            }
+            const buses = await firebase.getDocumentByParam(COLLECTION_NAME,query,['driver_id']);
+            if(buses.length === 0){
+                data.push(driver);
+            }
+        }
+        if(data.length === 0) return res.status(404).json({message : 'No Bus Driver Available'});
 
+        res.status(200).json(data);
+    }catch(error){
+        console.log(error);
+    }
+}
 
 // POST REQUEST
 const registerBus = async (req,res,next)=>{
@@ -65,5 +87,6 @@ const registerBus = async (req,res,next)=>{
 
 export default {
     listBus,
-    registerBus
+    registerBus,
+    busWithoutDrivers
 }
