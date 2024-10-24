@@ -2,6 +2,7 @@ import firebase from './firebase.js';
 import ORS from '../utils/OpenRouteServicesAPI.js';
 import {getDistanceFromLatLonInKm, isNearby} from '../utils/HaversineFormula.js';
 import { collection } from 'firebase/firestore';
+import moment from 'moment';
 const COLLECTION = 'routes';
 const routeFields = [
     'origin',
@@ -207,7 +208,7 @@ const bookTrip = async (req,res,next)=>{
 
 
        const setData = {
-        booking_date : new Date()
+        booking_date :  moment().utcOffset(8).toDate()
        }
 
      const doc_id = await firebase.setDocument('tickets',setData,refDoc);
@@ -226,8 +227,10 @@ const bookTrip = async (req,res,next)=>{
         available_seats : newAvailableSeats
      }
      await firebase.updateData(COLLECTION,newData,route_id);
-
-       res.status(200).json({ message: 'Ticket reserved'});
+      // Generate a random number between 1000 and 9999
+    const randomNum = Math.floor(1000 + Math.random() * 9000);
+     const ticket_number = setData.booking_date.getTime().toString()+randomNum.toString();
+       res.status(200).json({ message: 'Ticket reserved', ticket_number: ticket_number});
 
     }catch(error){
         console.log(error);
