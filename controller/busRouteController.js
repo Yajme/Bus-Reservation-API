@@ -206,9 +206,12 @@ const bookTrip = async (req,res,next)=>{
         key : 'route'
        });
 
-
+       const booking_date =  moment().utcOffset(8).toDate();
+       const randomNum = Math.floor(1000 + Math.random() * 9000);
+       const ticket_number = booking_date.getTime().toString()+randomNum.toString();
        const setData = {
-        booking_date :  moment().utcOffset(8).toDate()
+        booking_date : booking_date,
+        ticket_number : ticket_number
        }
 
      const doc_id = await firebase.setDocument('tickets',setData,refDoc);
@@ -228,8 +231,7 @@ const bookTrip = async (req,res,next)=>{
      }
      await firebase.updateData(COLLECTION,newData,route_id);
       // Generate a random number between 1000 and 9999
-    const randomNum = Math.floor(1000 + Math.random() * 9000);
-     const ticket_number = setData.booking_date.getTime().toString()+randomNum.toString();
+    
        res.status(200).json({ message: 'Ticket reserved', ticket_number: ticket_number});
 
     }catch(error){
