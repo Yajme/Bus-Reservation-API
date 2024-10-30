@@ -5,4 +5,5 @@ const router = express.Router();
 
 router.get('/all',ticketController.getAllTicket);
 router.get('/search',ticketController.getTrips);
+router.get('/view',ticketController.viewPassengers);
 export default router;

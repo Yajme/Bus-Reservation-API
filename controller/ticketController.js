@@ -33,7 +33,28 @@ const getAllTicket = async (req,res,next)=>{
         next(error);
     }
 }
+const viewPassengers = async (req,res,next)=>{
+    try{
+        const driver_id = req.query.id;
+        const route_id = req.query.route;
+        const selected = [
+            'booking_date',
+            'passenger',
+            'last_name',
+            'first_name',
+             'number_of_seats_occupied',
+             'ticket_number'
+        ]
+        const routeRef = await firebase.createDocumentReference('routes',route_id);
+        const constraint = setQuery('route','==',routeRef);
+        const tickets = await firebase.getDocumentByParam(COLLECTION,constraint,selected);
 
+        if(tickets.length < 1) return res.status(404).json({ message : "No Passenger Reserved"});
+        res.json(tickets);
+    }catch(error){
+        next(error);
+    }
+}
 const getTrips = async (req,res,next)=>{
     try{
         const role = req.query.role;
@@ -152,5 +173,6 @@ const getTrips = async (req,res,next)=>{
 
 export default {
     getAllTicket,
-    getTrips    
+    getTrips,
+    viewPassengers    
 };
