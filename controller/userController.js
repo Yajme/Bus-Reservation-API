@@ -124,12 +124,55 @@ const userValidation = (req,res,next) =>{
         const role = res.locals.authenticated.role;
         if(role !== url) return res.status(400).json({message : 'Unauthorized access'});
 
+        next();
+    }catch(error){
+        next(error);
+    }
+}
+const registerUserDevice = async (req,res,next)=>{
+    try{
+        const id = res.locals.authenticated.id;
+        const token = req.body.token;
+        if(res.locals.authenticated.role == 'passenger' && !token || token == null){
+           return next();
+        }
+
+        const userRef = await firebase.createDocumentReference(COLLECTION_NAME,id);
+        const constraint = {
+            key : 'user_id',
+            Logic : '==',
+            Param : userRef
+        }
+        const getDriver = await firebase.getDocumentByParam('driver',constraint,['id']);
+        const driverId =  getDriver[0].id;
+        const driverRef = await firebase.createDocumentReference('driver',driverId);
+        //check first if token already exist
+        //then if the id is existent proceed to next()
+        const constraints = {
+            key : 'token',
+            Logic : '==',
+            Param : token
+        }
+        const checkToken = await firebase.getDocumentByParam('devices',constraints,['id','token',]);
+        if(checkToken.length > 0)  return next();
+        const setData = { 
+            token : token,
+            driver : driverRef
+        }
+
+        await firebase.setDocument('devices',setData);
+        next();
+    }catch(error){
+        next(error);
+    }
+}
+const respondAuth = (req,res,next) =>{
+    try{
         res.json(res.locals.authenticated);
     }catch(error){
         next(error);
     }
 }
-
 
 const register = async(req,res,next)=>{
     try{
@@ -229,7 +272,25 @@ const changePassword = async(req,res,next)=>{
         next(error);
     }
 }
+const logout = async(req,res,next)=>{
+    try{
+        const token = req.body.token;
+        const constraint = {
+            key : 'token',
+            Logic : '==',
+            Param : token
+        }
+        const getDoc = await firebase.getDocumentByParam('devices',constraint,['id']);
+        const id = getDoc[0].id;
 
+        const deleted = await firebase.deleteDocument('devices',id);
+        if(!deleted) res.json({message: 'Token deleted unsuccessfully'});
+
+        res.status(200).json({message : "Token Deleted Successfully"});
+    }catch(error){
+        next(error);
+    }
+}
 export default {
 authenticateUser,
 register,
@@ -238,5 +299,8 @@ userValidation,
 changePassword,
 selectUser,
 listUser,
-userCount
+userCount,
+respondAuth,
+registerUserDevice,
+logout
 };

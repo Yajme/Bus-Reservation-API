@@ -180,7 +180,7 @@ const bookTrip = async (req,res,next)=>{
         const user_id = req.body.user_id;
         const route_id = req.body.route_id;
         
-        const data = await firebase.getDocumentById(COLLECTION,route_id,['available_seats']);
+        const data = await firebase.getDocumentById(COLLECTION,route_id,['available_seats','bus','driver_id_id']);
         const busSeats = Number(data.available_seats);
         const seats = Number(seat_occupation);
         //Validate available seats;
@@ -211,7 +211,8 @@ const bookTrip = async (req,res,next)=>{
        const ticket_number = booking_date.getTime().toString()+randomNum.toString();
        const setData = {
         booking_date : booking_date,
-        ticket_number : ticket_number
+        ticket_number : ticket_number,
+        number_of_seats_occupied : seats
        }
 
      const doc_id = await firebase.setDocument('tickets',setData,refDoc);
@@ -230,8 +231,19 @@ const bookTrip = async (req,res,next)=>{
         available_seats : newAvailableSeats
      }
      await firebase.updateData(COLLECTION,newData,route_id);
-      // Generate a random number between 1000 and 9999
-    
+      //Send a notificaition here to driver
+      console.log(data);
+      const driverRef = await firebase.createDocumentReference('driver',data.bus.driver_id_id);
+      const tokenConstraint = setQuery('driver','==',driverRef);
+      const getToken = await firebase.getDocumentByParam('devices',tokenConstraint,['token']);
+      console.log(getToken);
+      const registrationToken = getToken[0].token;
+      const message = {
+        title: "New passenger",
+        body: "A passenger reserved a trip"
+      }
+      firebase.sendNotification(message,registrationToken);
+
        res.status(200).json({ message: 'Ticket reserved', ticket_number: ticket_number});
 
     }catch(error){
@@ -287,10 +299,19 @@ const setRoute = async (req,res,next)=>{
         res.status(400).json({message : error.message});
     }
 }
+const test= async (req,res,next)=>{
+const data = await firebase.getDocumentById(COLLECTION,'0oyUl1vCGYzMPZdEEEyQ',[
+    'bus',
+    'driver_id_id',
+    'available_seats'
+  ]);
+res.json(data);
+}
 export default {
 getAvailableRoute,
 bookTrip,
 searchRoutes,
 setRoute,
-listDriverWithPassenger
+listDriverWithPassenger,
+test
 };

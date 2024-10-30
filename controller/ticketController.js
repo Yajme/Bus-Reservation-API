@@ -13,7 +13,8 @@ const ticketFields = [
       'origin_coordinates',
       'destination',
       'destination_coordinates',
-
+      'number_of_seats_occupied',
+      'ticket_number'
 ]
 const setQuery = (key,logic,param)=>{
     return {

@@ -2,9 +2,9 @@
 
 import { initializeApp } from "firebase/app";
 import dotenv from 'dotenv';
-import { Firestore,doc,setDoc,collection,getDocs, getFirestore, query,where, orderBy, limitToLast, AggregateField,sum,getAggregateFromServer, count, updateDoc, DocumentReference,getDoc, documentId, GeoPoint, Timestamp} from "firebase/firestore";
+import { Firestore,doc,setDoc,collection,getDocs, getFirestore, query,where, orderBy, limitToLast, AggregateField,sum,getAggregateFromServer, count, updateDoc, DocumentReference,getDoc, documentId, GeoPoint, Timestamp,deleteDoc} from "firebase/firestore";
 import { get } from "firebase/database";
-
+import admin from "firebase-admin";
 dotenv.config();
 // TODO: Add SDKs for Firebase products that you want to use
 
@@ -21,6 +21,9 @@ const firebaseConfig = {
   messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.FIREBASE_APP_ID
 };
+const serviceAccount = JSON.parse(
+  process.env.FIREBASE_SERVICE_ACCOUNT_KEY
+);
 
 
 // Initialize Firebase
@@ -35,13 +38,42 @@ const initializeFirebase = ()=>{
     try{
         app = initializeApp(firebaseConfig);
         firestoreDb = getFirestore(app);
+        admin.initializeApp({
+          credential: admin.credential.cert(serviceAccount)
+        });
+
+        
         return app;
     }catch(err){
         console.log(`${err}`);
     }
 }
 
+const sendNotification = (message,token)=>{
+  try{
+        const messageSend = {
+          token : token,
+          notification : {
+            title  : message.title,
+            body: message.body
+          }
+        }
 
+        admin.messaging().send(messageSend)
+        .then((response) => {
+          // Response is a message ID string.
+          console.log('Successfully sent message:', response);
+        })
+        .catch((error) => {
+          console.log('Error sending message:', error);
+        });
+
+    
+  }catch(error){
+    console.log(error);
+    throw error;
+  }
+}
 const updateData = async(collectionName,newData,documentId)=>{
     try{
         const docRef = doc(firestoreDb,collectionName,documentId);
@@ -64,7 +96,8 @@ const fetchDocumentData = async (docSnap,selectedFields = [])=>{
         for (const [key, value] of Object.entries(docData)) {
             if (value instanceof DocumentReference) {
               console.log(`Found nested DocumentReference in field '${key}'`);
-        
+        // Add the ID of the referenced document
+        finalData[`${key}_id`] = value.id;
               // Recursively fetch the referenced document
               const nestedDocSnap = await getDoc(value);
               if (nestedDocSnap.exists()) {
@@ -237,21 +270,12 @@ const getDocumentById = async (collectionName,documentId,selectedFields =[])=>{
       console.log(`Document ID: ${documentId}`);
 
       // Fetch the document data, and filter based on selected fields if needed
-      const docData = docSnap.data();
 
-      // Filter the document data if selectedFields are provided
-      let finalData = {};
-      if (selectedFields.length > 0) {
-        selectedFields.forEach(field => {
-          if (docData[field] !== undefined) {
-            finalData[field] = docData[field];
-          }
-        });
-      } else {
-        finalData = docData; // Return full document data if no fields are selected
-      }
+      const docData = await fetchDocumentData(docSnap, selectedFields);
 
-      return { id: documentId, ...finalData };
+      
+
+      return { id: documentId, ...docData };
     } else {
       console.log("No such document!");
       return null;
@@ -264,6 +288,18 @@ const getDocumentById = async (collectionName,documentId,selectedFields =[])=>{
         console.log(error);
     }
 };
+const deleteDocument = async (collectionName, documentId) => {
+  try {
+    const docRef = doc(firestoreDb, collectionName, documentId);
+    const deleteData = await deleteDoc(docRef);
+    console.log(`Document with ID ${documentId} deleted successfully, ${deleteData}`);
+    return true;
+  } catch (error) {
+    console.error("Error deleting document:", error);
+    return false;
+  }
+};
+
 const getFilteredData = async(collectionName,Param,key,Logic,Limit,order)=>{
     try{
         
@@ -380,5 +416,7 @@ export default {
     getDocumentByParamWithId,
     createDocumentReference,
     toGeopoint,
-    toTimestamp
+    toTimestamp,
+    sendNotification,
+    deleteDocument
 };

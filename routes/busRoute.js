@@ -8,7 +8,7 @@ router.get("/available",busRouteController.getAvailableRoute);
 router.get('/search',busRouteController.searchRoutes);
 router.post("/book",busRouteController.bookTrip);
 router.post('/set',busRouteController.setRoute);
-
+router.get('/test', busRouteController.test);
 
 
 export default router;
