@@ -236,13 +236,16 @@ const bookTrip = async (req,res,next)=>{
       const driverRef = await firebase.createDocumentReference('driver',data.bus.driver_id_id);
       const tokenConstraint = setQuery('driver','==',driverRef);
       const getToken = await firebase.getDocumentByParam('devices',tokenConstraint,['token']);
-      console.log(getToken);
-      const registrationToken = getToken[0].token;
-      const message = {
-        title: "New passenger",
-        body: "A passenger reserved a trip"
+      if(getToken.length > 0) {
+        console.log(getToken);
+        const registrationToken = getToken[0].token;
+        const message = {
+          title: "New passenger",
+          body: "A passenger reserved a trip"
+        }
+        firebase.sendNotification(message,registrationToken);
       }
-      firebase.sendNotification(message,registrationToken);
+      
 
        res.status(200).json({ message: 'Ticket reserved', ticket_number: ticket_number});
 
