@@ -154,7 +154,11 @@ const registerUserDevice = async (req,res,next)=>{
             Param : token
         }
         const checkToken = await firebase.getDocumentByParam('devices',constraints,['id','token',]);
-        if(checkToken.length > 0)  return next();
+        if(checkToken.length > 0){
+            for(const token of checkToken){
+                const deleted = await firebase.deleteDocument('devices',token.id);
+            }
+        }
         const setData = { 
             token : token,
             driver : driverRef
