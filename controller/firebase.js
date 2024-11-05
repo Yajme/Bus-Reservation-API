@@ -51,6 +51,7 @@ const initializeFirebase = ()=>{
 
 const sendNotification = (message,token)=>{
   try{
+    console.log(`token: ${token}`);
         const messageSend = {
           token : token,
           notification : {
