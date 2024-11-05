@@ -14,6 +14,10 @@ const routeFields = [
     'bus',
     'total_seats',
     'bus_line',
+    'driver_id',
+    'first_name',
+    'last_name',
+    'bus_number',
     'id'
 ];
 const getAvailableRoute = async (req,res,next)=>{
@@ -28,7 +32,7 @@ const getAvailableRoute = async (req,res,next)=>{
         }
         const data = await firebase.getDocumentByParam(COLLECTION, query,selectedFields);
 
-
+        if(data.length < 1) return res.status(404).json({message : "No Available Route at this moment"});
         res.json(data);
     }catch(error){
         next(error);
